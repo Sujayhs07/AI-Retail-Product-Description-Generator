@@ -1,0 +1,20 @@
+# Environment secrets
+.env
+.env.*
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+
+# Local DB & storage
+*.db
+*.sqlite3
+catalogcraft.db
+uploads/
+exports/
