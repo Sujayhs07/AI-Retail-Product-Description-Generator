@@ -3,88 +3,101 @@
 > **TCS Technology Day Prototype**  
 > *“Generate compelling, consistent, SEO-ready retail product content at scale with multi-model AI arbitration.”*
 
-CatalogCraft AI is an enterprise AI-powered platform that accepts structured retail product data and automatically generates accurate, engaging, consistent, and SEO-optimized product descriptions. It features a multi-model architecture supporting **Google Gemini (Gemini 2.5 Flash Lite)**, **Anthropic Claude 3.5 Sonnet**, an intelligent **Dual-Engine Arbitration Decider** that benchmarks both models head-to-head, and a zero-config **Deterministic Mock AI Engine** for offline demonstrations.
+CatalogCraft AI is an enterprise AI copywriting and catalog intelligence platform. It ingests structured retail product specifications and automatically generates high-converting, brand-aligned, and SEO-optimized product copy. It features a multi-model architecture supporting **Google Gemini (Gemini 2.5 Flash Lite)**, **Anthropic Claude (Claude 3.5 Sonnet)**, an intelligent **Dual-Engine Arbitration Decider** with side-by-side candidate comparison and manual approval workflow, and a deterministic **Mock AI Engine** for zero-latency, offline demonstrations.
 
-CatalogCraft AI provides two client interfaces: a full-featured **React 19 + TypeScript + Tailwind CSS** production studio and an executive **Streamlit** dashboard for rapid review and video walkthroughs.
+The platform provides two complete client interfaces:
+- **Option 1: Streamlit Executive Studio** (`http://localhost:8501`) — A single-process dashboard with interactive studio navigation, side-by-side candidate cards, catalog exploration, batch uploads, and live metrics.
+- **Option 2: React 19 + TypeScript + Tailwind CSS Production Studio** (`http://localhost:5173`) — An enterprise web studio with dark/light theme switching, live scoring panels, in-place copy editing, version history, Recharts analytics, and batch workflow management connected to a **FastAPI** backend (`http://localhost:8000`).
 
 ---
 
-## 🏗️ Architecture Diagram
+## 🏗️ System Architecture
 
 ```mermaid
 graph TD
-    User([Retailer / Merchandiser / Judge]) -->|React Studio UI :5173| Frontend[Frontend: React 19 + TS + Tailwind]
-    User -->|Streamlit App :8501| Streamlit[Streamlit Executive Dashboard]
+    User([Retailer / Merchandiser / Evaluator]) -->|Option 2: React Studio :5173| Frontend[Frontend: React 19 + TS + Tailwind v4]
+    User -->|Option 1: Streamlit Studio :8501| Streamlit[Streamlit Executive Studio]
     
-    Frontend -->|REST API Calls| Backend[Backend: FastAPI + Python 3.11+]
-    Streamlit -->|Direct Service Calls| Backend
+    Frontend -->|REST API :8000| Backend[Backend: FastAPI + Python 3.11+]
+    Streamlit -->|Internal Service Calls| BackendServices[Backend Services & Repositories]
     
     subgraph Multi-Model AI Layer
-        Backend --> PromptBuilder[PromptBuilder Service]
-        PromptBuilder --> Decider[DescriptionDecider / Arbiter]
-        Decider -->|Dual Mode / Head-to-Head| Both[Comparative Benchmark]
+        Backend --> PromptBuilder[PromptBuilder: XML Isolation & Defensive Directives]
+        BackendServices --> PromptBuilder
+        PromptBuilder --> Decider[DescriptionDecider / Arbiter Engine]
+        Decider -->|Dual Mode / Head-to-Head| Both[Dual Candidate Generator]
         Decider -->|Gemini Key Present| Gemini[Google Gemini 2.5 Flash Lite]
         Decider -->|Claude Key Present| Claude[Anthropic Claude 3.5 Sonnet]
-        Decider -->|Offline / No Keys| MockEngine[Deterministic Mock AI Generator]
+        Decider -->|Offline / Keys Absent| MockEngine[Deterministic Mock AI Generator]
         Both --> Gemini
         Both --> Claude
     end
     
-    subgraph Quality Scoring & Storage Layer
-        Backend --> QualityScorer[Quality Scoring Engine: 4 Dimensions]
+    subgraph Scoring, Governance & Storage Layer
+        Backend --> QualityScorer[Quality Scoring Engine: 4 Dimensions / 100 Pts]
+        Backend --> SecurityMiddleware[Security Middleware & Sanitization]
         Backend --> BatchProcessor[Pandas Batch Processing Service]
         Backend --> SQLite[(SQLite Database: catalogcraft.db)]
         BatchProcessor -->|Reads & Writes| Filesystem[Uploads & Exports Directories]
     end
     
-    QualityScorer -->|Completeness, SEO, Readability, Brand Tone| Frontend
-    Decider -->|Winner Copy + Decision Rationale| Frontend
+    QualityScorer -->|Completeness, SEO, Readability, Brand Alignment| Frontend
+    Decider -->|Winner Copy + Decision Rationale + Candidates| Frontend
+    Decider -->|Candidates + Manual Approval Workflow| Streamlit
 ```
 
 ---
 
-## 🌟 Key Features
+## 🌟 Key Platform Features
 
-1. **Multi-Model AI Generation & Dual-Engine Arbitration**:
-   - **Dual-AI Arbiter Mode**: Generates candidate copy with both **Google Gemini** and **Anthropic Claude 3.5 Sonnet**, calculates granular scores across all dimensions, and crowns the winning copy with transparent comparative rationale.
-   - **Direct Model Selection**: Run specifically on Google Gemini (`gemini-2.5-flash-lite`) or Anthropic Claude (`claude-3-5-sonnet-20241022`).
-   - **Offline Deterministic Mock AI Engine**: Instant, realistic fallback generation for both Gemini and Claude styles when API keys are absent or offline.
+### 1. Multi-Model AI Generation & Dual-Engine Decider
+- **Dual-AI Arbiter Mode**: Generates candidate copy from both **Google Gemini** and **Anthropic Claude**, computes weighted scores across all 4 quality dimensions, and selects the optimal winner with transparent comparative rationale.
+- **Side-by-Side Candidate Comparison**: Both Streamlit and React interfaces display both Gemini and Claude outputs simultaneously with metrics and a **1-click manual approval workflow**.
+- **Model Switching**: Run independently with Gemini (`gemini-2.5-flash-lite`), Claude (`claude-3-5-sonnet-20241022`), or Dual Arbitration.
+- **Offline Deterministic Fallback**: Automatic, zero-latency realistic generation when API keys are not supplied.
 
-2. **Single Product Description Generator**:
-   - Multi-section input form (Basic Information, Category, Specifications, SEO Targets, Brand Voice Config).
-   - **"Load Sample Product"** preset button for instant 1-click judge demos.
-   - Generates structured copy: SEO Title, Short Hook Description, Feature-Rich Full Description, Key Highlights Bullets, Meta Title, Meta Description, Search Keywords, and Missing Attribute Warnings.
+### 2. Single Product Copy Generator
+- Structured input form: Title, Category, Brand, Price, Currency, Technical Specs/Features, Target Audience, and Focus Keywords.
+- **"Load Sample Product"**: Instant 1-click test data loader across popular retail categories.
+- Generated copy package:
+  - **SEO Product Title**: Keyword-rich headline tailored for marketplace search algorithms.
+  - **Short Hook Description**: Concise, high-converting summary for listing cards.
+  - **Full Description**: Detailed, benefits-driven narrative for product detail pages.
+  - **Bullet Highlights**: 4–5 scannable key benefit bullets.
+  - **SEO Metadata**: Optimized Meta Title (under 60 chars) and Meta Description (under 160 chars).
+  - **Suggested Search Keywords**: High-intent search terms.
 
-3. **Transparent Quality Scoring Engine**:
-   - Evaluates copy across 4 weighted dimensions:
-     - **Completeness (30%)**: Verifies inclusion of core product specifications, materials, and target audience.
-     - **SEO Optimization (30%)**: Measures keyword density, meta title/description length limits, and scannability.
-     - **Readability (20%)**: Assesses Flesch-Kincaid grade level, sentence structure, and clarity.
-     - **Brand Tone Alignment (20%)**: Checks conformity with selected tone and absence of banned words.
-   - Provides actionable suggestions and missing data warnings.
+### 3. Transparent 4-Dimensional Quality Scoring (100 Pts)
+- **Completeness (30%)**: Checks incorporation of core specs, materials, and target audience.
+- **SEO Optimization (30%)**: Verifies keyword frequency, meta tag lengths, and structure.
+- **Readability (20%)**: Computes Flesch-Kincaid Grade Level and sentence clarity.
+- **Brand Tone Alignment (20%)**: Enforces selected voice tone and audits against prohibited/banned words.
 
-4. **High-Throughput Batch Generator & Upload**:
-   - Drag-and-drop CSV and JSON catalog upload with row-level validation.
-   - Live progress tracking with item status badges (`Queued`, `Processing`, `Completed`, `Failed`).
-   - Independent retry for failed rows without reprocessing the entire batch.
-   - Downloadable starter datasets (`sample_products.csv` and `sample_products.json`) featuring 50+ realistic records across 8 retail verticals.
+### 4. High-Throughput Batch Generation & File Upload
+- Drag-and-drop CSV and JSON catalog ingest with row-level validation.
+- Real-time progress tracking with status badges (`Queued`, `Processing`, `Completed`, `Failed`).
+- Isolated row retry mechanism without rerunning the full catalog.
+- Downloadable starter datasets (`sample_products.csv` and `sample_products.json`) with 50+ retail SKUs.
 
-5. **Product Catalogue & Approval Workflow**:
-   - Multi-attribute search, filtering (Category, Brand, Tone, Approval Status, Quality Score range), sorting, and pagination.
-   - **Side-by-Side Review Modal**: Direct comparison of raw product attributes against generated AI copy.
-   - In-place editorial mode, version history snapshots, "Human Edited" audit tags, and one-click Approval toggles.
+### 5. Product Catalogue & Editorial Workflow
+- Live catalog search and multi-criteria filters (Category, Brand, Tone, Approval Status, Score Range).
+- Side-by-side inspection modal comparing input specs with generated copy.
+- In-place copy editing with audit stamps (`Human Edited`) and version history tracking.
 
-6. **Executive Analytics & Business Intelligence**:
-   - Interactive Recharts visualizers for generation volume trends over time, category distributions, quality/SEO score histograms, and tone usage.
-   - Plain-English business commentary beneath every chart.
-   - One-click CSV and JSON report exports.
+### 6. Executive Business Intelligence & Analytics
+- Visual analytics covering generation volume trends, category breakdown, score distributions, and tone usage.
+- Plain-language business commentary beneath every metric.
+- Instant CSV and JSON report exports.
 
-7. **Brand Voice & Content Rules**:
-   - Configure brand tone presets, preferred vocabulary, prohibited/banned phrases, and mandatory legal disclaimers.
-   - Real-time system prompt previewer and instant rule test bench.
+### 7. Brand Voice & Governance Rules
+- Configure brand tone presets, required phrases, and prohibited/banned vocabulary.
+- Live system prompt inspection and rule test sandbox.
 
-8. **Responsible AI Safety Governance**:
-   - Enforces human-in-the-loop editorial review, zero PII collection, factual grounding on supplied specs to curb hallucinations, and bias mitigation protocols.
+### 8. Built-in Security Hardening
+- **CSV Formula Injection Defense (CWE-1236)**: Sanitizes all exported cells against spreadsheet formula execution (`=`, `+`, `-`, `@`, `\t`, `\r`).
+- **Upload File Size Limitation (CWE-400)**: Enforces a 15 MB cap with chunked streaming validation to prevent memory exhaustion (DoS).
+- **HTTP Security Headers (CWE-693)**: Enforces `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and strict referrer policy.
+- **Indirect Prompt Injection Defense (OWASP LLM01)**: Delimits product attributes within `<PRODUCT_DATA>` XML tags and instructs models to treat enclosed content strictly as untrusted data.
 
 ---
 
@@ -92,44 +105,144 @@ graph TD
 
 ```text
 catalogcraft-ai/
-├── backend/                        # FastAPI Backend Application
-│   ├── app/
-│   │   ├── config.py               # Environment and settings configuration
-│   │   ├── database.py             # SQLAlchemy engine, session, and table init
-│   │   ├── main.py                 # FastAPI app entry point, CORS, lifespan seeding
-│   │   ├── models/                 # SQLAlchemy ORM models (Product, Content, Brand, Batch)
-│   │   ├── repositories/           # Database CRUD abstraction layers
-│   │   ├── routers/                # REST API routers (Health, Products, Gen, Batch, Analytics)
-│   │   ├── schemas/                # Pydantic v2 validation and response models
-│   │   ├── seed/                   # Database auto-seed datasets (50+ retail products)
-│   │   ├── services/
-│   │   │   ├── ai/                 # Gemini, Claude, Mock Generator, Decider, PromptBuilder
-│   │   │   ├── batch/              # Pandas batch CSV/JSON processor
-│   │   │   ├── export/             # CSV and JSON report exporters
-│   │   │   └── scoring/            # 4-dimensional Quality Scoring Engine
-│   │   └── tests/                  # Pytest test suite (API, decider, mock, scoring)
-│   ├── data/                       # Downloadable sample datasets (CSV/JSON)
-│   ├── exports/                    # Runtime catalog export directory
-│   ├── uploads/                    # Runtime batch upload directory
-│   ├── requirements.txt            # Python dependencies
-│   ├── streamlit_app.py            # Standalone Streamlit Executive Dashboard
-│   └── .env.example                # Backend environment template
-├── frontend/                       # React 19 + Vite Production Studio
-│   ├── src/
-│   │   ├── api/                    # Axios API client services
-│   │   ├── components/             # Reusable UI components (generation, catalogue, batch, layout)
-│   │   ├── hooks/                  # Custom React hooks (theme, etc.)
-│   │   ├── pages/                  # Studio views (Dashboard, Generate, Batch, Catalogue, Analytics, etc.)
-│   │   ├── types/                  # TypeScript interface definitions
-│   │   ├── App.tsx                 # React Router configuration
-│   │   └── main.tsx                # React DOM mount point
-│   ├── package.json                # Frontend dependencies and npm scripts
-│   ├── vite.config.ts              # Vite configuration
-│   └── .env.example                # Frontend environment template
-├── run_app.bat                     # Windows 1-click launcher (FastAPI + React Vite)
-├── run_streamlit.bat               # Windows 1-click launcher (Streamlit Dashboard)
-├── catalogcraft.db                 # SQLite database file (seeded automatically)
-└── README.md                       # Platform documentation
+├── .gitignore                                 # Git ignore rules (DBs, env, uploads, node_modules)
+├── .streamlit/                                # Global Streamlit styling and server configuration
+│   └── config.toml                            # Dark theme tokens, port, and security settings
+├── .vscode/                                   # IDE editor settings
+│   └── settings.json                          # Tailwind CSS custom at-rules lint configuration
+├── README.md                                  # Complete platform documentation
+├── catalogcraft.db                            # SQLite database (auto-seeded on startup)
+├── run_app.bat                                # Windows 1-click launcher for Option 2 (React + FastAPI)
+├── run_streamlit.bat                          # Windows 1-click launcher for Option 1 (Streamlit Studio)
+│
+├── backend/                                   # FastAPI Backend & Streamlit Application
+│   ├── .env.example                           # Backend environment template
+│   ├── .streamlit/config.toml                 # Streamlit theme and runtime configuration
+│   ├── requirements.txt                       # Python dependencies (FastAPI, Google GenAI, Anthropic, Streamlit)
+│   ├── streamlit_app.py                       # Standalone Streamlit Executive Studio (Option 1)
+│   ├── create_demo_upload_csv.py              # Script to generate sample demo upload CSVs
+│   ├── generate_100_products.py               # Seed utility generating 100 realistic catalog items
+│   ├── generate_electronics_fashion_110.py    # Seed utility generating 110 electronics & fashion items
+│   │
+│   ├── app/                                   # FastAPI Application Package
+│   │   ├── config.py                          # Pydantic BaseSettings environment loader
+│   │   ├── database.py                        # SQLAlchemy engine, session maker, Base declarative
+│   │   ├── dependencies.py                    # FastAPI dependency injection (DB sessions)
+│   │   ├── main.py                            # FastAPI app, security headers, CORS, lifespan startup
+│   │   │
+│   │   ├── models/                            # SQLAlchemy Database ORM Models
+│   │   │   ├── batch.py                       # BatchJob and BatchItem models
+│   │   │   ├── brand_settings.py              # BrandSettings model (tones, banned words, disclaimers)
+│   │   │   ├── generated_content.py           # GeneratedContent and ContentVersion models
+│   │   │   └── product.py                     # Product model (SKU, title, category, price, specs)
+│   │   │
+│   │   ├── repositories/                      # Data Access Layer (CRUD Abstractions)
+│   │   │   ├── content_repository.py          # Content query, versioning, and update methods
+│   │   │   └── product_repository.py          # Product search, filter, pagination, and seed methods
+│   │   │
+│   │   ├── routers/                           # REST API Endpoints
+│   │   │   ├── analytics.py                   # /api/analytics/overview metrics and distributions
+│   │   │   ├── batch.py                       # /api/batch/upload, /api/batch/{id}/process, status
+│   │   │   ├── export.py                      # /api/export/{format} CSV and JSON catalog download
+│   │   │   ├── generation.py                  # /api/generate-description, /api/decide-description
+│   │   │   ├── health.py                      # /api/health service check and engine status
+│   │   │   ├── products.py                    # /api/products listing, filters, and detail
+│   │   │   └── settings.py                    # /api/settings/brand voice guidelines and rules
+│   │   │
+│   │   ├── schemas/                           # Pydantic v2 Request/Response Validation Schemas
+│   │   │   ├── batch.py                       # Batch upload and progress schemas
+│   │   │   ├── brand_settings.py              # Brand settings schemas
+│   │   │   ├── generated_content.py           # Content generation request and response schemas
+│   │   │   └── product.py                     # Product create, update, and response schemas
+│   │   │
+│   │   ├── seed/                              # Database Auto-Seeding
+│   │   │   └── seed_data.py                   # Automated seeding logic on startup
+│   │   │
+│   │   ├── services/                          # Business Logic Services
+│   │   │   ├── ai/                            # Multi-Model AI Engines
+│   │   │   │   ├── anthropic_generator.py     # Claude 3.5 Sonnet generation service
+│   │   │   │   ├── claude_service.py          # Claude API client helper
+│   │   │   │   ├── description_decider.py     # Dual-AI decider, arbitration & candidate evaluation
+│   │   │   │   ├── gemini_generator.py        # Google Gemini 2.5 Flash Lite generation service
+│   │   │   │   ├── mock_generator.py          # Deterministic offline mock AI generator
+│   │   │   │   └── prompt_builder.py          # XML-delimited, anti-injection prompt templates
+│   │   │   ├── batch/                         # Batch Processing
+│   │   │   │   └── processor.py               # Pandas CSV/JSON catalog parser and runner
+│   │   │   ├── export/                        # Export Processing
+│   │   │   │   └── exporter.py                # CSV/JSON exporter with formula sanitization
+│   │   │   └── scoring/                       # Quality Scoring
+│   │   │       └── quality_scorer.py          # 4-dimensional quality and SEO scoring engine
+│   │   │
+│   │   └── tests/                             # Pytest Automated Test Suite
+│   │       ├── test_api.py                    # Health, products, security headers, CSV escaping
+│   │       ├── test_dual_ai_decider.py        # Dual-AI arbitration and scoring tests
+│   │       ├── test_mock_generator.py         # Mock AI generator deterministic copy tests
+│   │       └── test_scoring.py                # 4-dimension quality score calculation tests
+│   │
+│   ├── data/                                  # Downloadable Catalog Datasets
+│   │   ├── sample_products.csv                # 50+ retail products across 8 categories (CSV)
+│   │   └── sample_products.json               # 50+ retail products across 8 categories (JSON)
+│   ├── exports/                               # Generated catalog exports directory
+│   └── uploads/                               # Uploaded batch files directory
+│
+└── frontend/                                  # React 19 + TypeScript + Tailwind CSS Studio
+    ├── .env.example                           # Frontend environment template
+    ├── index.html                             # Single Page App HTML entry with theme preload script
+    ├── package.json                           # React 19, Vite, Tailwind v4, Lucide, Recharts dependencies
+    ├── postcss.config.js                      # PostCSS configuration for Tailwind v4
+    ├── tailwind.config.js                     # Legacy Tailwind config reference
+    ├── tsconfig.json                          # TypeScript project configuration
+    ├── vite.config.ts                         # Vite dev server and proxy configuration
+    │
+    └── src/
+        ├── App.tsx                            # Root application component with React Router
+        ├── main.tsx                           # React DOM mount point
+        │
+        ├── api/                               # API Client Layer
+        │   └── client.ts                      # Axios client instance and API endpoint helper functions
+        │
+        ├── components/                        # UI Component Hierarchy
+        │   ├── batch/                         # Batch Upload & Progress Components
+        │   │   ├── BatchProgressTracker.tsx   # Progress bar, row metrics, and status badges
+        │   │   └── FileUploader.tsx           # Drag-and-drop file upload with CSV/JSON validation
+        │   ├── catalogue/                     # Product Catalogue Components
+        │   │   ├── CatalogueFilterBar.tsx     # Search input, category dropdowns, score filters
+        │   │   ├── ProductDetailModal.tsx     # Full product inspection, copy editor, versions
+        │   │   └── ProductGrid.tsx            # Card grid displaying products and status tags
+        │   ├── common/                        # Shared UI Components
+        │   │   ├── DemoVideoPlayer.tsx        # Embedded walkthrough video player
+        │   │   ├── ErrorBoundary.tsx          # React component error boundary
+        │   │   ├── ScoreBadge.tsx             # Color-coded quality score badge
+        │   │   ├── StatCard.tsx               # Metric cards for dashboards and analytics
+        │   │   └── StatusBadge.tsx            # Status pills (Draft, Approved, Needs Review)
+        │   ├── generation/                    # Single Copy Generation Components
+        │   │   ├── ProductForm.tsx            # Multi-section product input with sample presets
+        │   │   ├── QualityScorePanel.tsx      # 4-metric score breakdown with suggestions
+        │   │   └── ResultCard.tsx             # Copy output card, decider rationale, side-by-side
+        │   └── layout/                        # Studio Shell Components
+        │       ├── Header.tsx                 # Top bar, AI engine indicator, theme toggle
+        │       ├── MainLayout.tsx             # Sidebar + Header container layout
+        │       └── Sidebar.tsx                # Studio navigation (Dashboard, Generate, Batch, etc.)
+        │
+        ├── hooks/                             # Custom React Hooks
+        │   └── useTheme.ts                    # Dark/light theme hook with localStorage persistence
+        │
+        ├── pages/                             # Route View Pages
+        │   ├── AnalyticsPage.tsx              # BI Dashboard with Recharts and business commentary
+        │   ├── BatchPage.tsx                  # Batch CSV/JSON generator and file uploads
+        │   ├── BrandSettingsPage.tsx          # Brand voice guidelines, banned words, prompt test
+        │   ├── CataloguePage.tsx              # Searchable product catalog and approval manager
+        │   ├── DashboardPage.tsx              # Overview metrics, recent generations, quick actions
+        │   ├── GeneratePage.tsx               # Single product copy generation studio
+        │   ├── HelpPage.tsx                   # User guides, keyboard shortcuts, FAQ
+        │   ├── NotFoundPage.tsx               # 404 handler
+        │   └── ResponsibleAIPage.tsx          # AI ethics, safety guardrails, governance statement
+        │
+        ├── styles/                            # Global Styles
+        │   └── index.css                      # Tailwind v4 import, @custom-variant dark, tokens
+        │
+        └── types/                             # TypeScript Type Definitions
+            └── index.ts                       # Product, Content, Batch, QualityScore, Theme types
 ```
 
 ---
@@ -138,83 +251,64 @@ catalogcraft-ai/
 
 | Layer | Technologies |
 |---|---|
-| **Frontend Studio** | React 19, TypeScript, Vite, Tailwind CSS v4, Recharts, Lucide Icons, Axios, React Router v7 |
-| **Executive Dashboard** | Streamlit, Pandas, Altair |
-| **Backend API** | Python 3.11+, FastAPI, Uvicorn, SQLAlchemy ORM, Pydantic v2, Pandas, Pytest, HTTPX |
-| **AI Models & Engines** | Google Gemini (`google-genai`), Anthropic Claude (`anthropic`), Dual-AI Decider Arbiter, Deterministic Mock Engine |
-| **Database & Storage** | SQLite (`catalogcraft.db`), Local file uploads & export directories |
+| **Option 1: Executive Studio** | Streamlit, Pandas, Altair, Python 3.11+ |
+| **Option 2: Production Studio** | React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Recharts, Axios, React Router v7 |
+| **Backend API** | Python 3.11+, FastAPI, Uvicorn, SQLAlchemy ORM, Pydantic v2, Pandas, HTTPX, Pytest |
+| **AI Models & Arbitration** | Google Gemini (`google-genai`), Anthropic Claude (`anthropic`), Dual-AI Decider Arbiter, Deterministic Mock Engine |
+| **Database & File Store** | SQLite (`catalogcraft.db`), Local file uploads & export directories |
 
 ---
 
-## 💻 Quick Start Guide
+## 💻 Quick Start & Launch Guide
 
-### Option A: One-Click Launchers (Windows)
+### 🚀 Launching Option 1: Streamlit Executive Studio
+Ideal for rapid evaluation, walkthroughs, and single-window testing:
 
-- **Launch Full Platform (FastAPI + React Studio)**:
-  Double-click `run_app.bat` or run:
-  ```cmd
-  run_app.bat
-  ```
-  *(Opens Backend on `http://127.0.0.1:8000` and React Studio on `http://localhost:5173`)*
-
-- **Launch Streamlit Dashboard**:
+- **Windows 1-Click**:
   Double-click `run_streamlit.bat` or run:
   ```cmd
   run_streamlit.bat
   ```
-  *(Opens Streamlit app on `http://localhost:8501`)*
+- **Manual Launch**:
+  ```bash
+  cd backend
+  # Activate virtual environment
+  .venv\Scripts\activate   # Windows
+  # source .venv/bin/activate  # macOS / Linux
+  streamlit run streamlit_app.py
+  ```
+- **URL**: `http://localhost:8501`
 
 ---
 
-### Option B: Manual Setup
+### 🚀 Launching Option 2: Full-Stack React Studio + FastAPI
+The complete production-grade enterprise copywriting studio:
 
-#### 1. Setup & Start Backend
+- **Windows 1-Click**:
+  Double-click `run_app.bat` or run:
+  ```cmd
+  run_app.bat
+  ```
+  *(Launches FastAPI on `http://127.0.0.1:8000` and Vite dev server on `http://localhost:5173`)*
 
-```bash
-cd backend
+- **Manual Backend Launch**:
+  ```bash
+  cd backend
+  python -m venv .venv
+  .venv\Scripts\activate      # Windows
+  pip install -r requirements.txt
+  uvicorn app.main:app --reload --port 8000
+  ```
+  - **API Documentation (Swagger UI)**: `http://localhost:8000/docs`
+  - **API Health Check**: `http://localhost:8000/api/health`
 
-# Create virtual environment
-python -m venv .venv
-
-# Activate Virtual Environment:
-# On Windows (PowerShell / CMD):
-.venv\Scripts\activate
-# On macOS / Linux:
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start FastAPI dev server
-uvicorn app.main:app --reload --port 8000
-```
-
-- **Backend API Docs (Swagger UI)**: `http://localhost:8000/docs`
-- **Health Check Endpoint**: `http://localhost:8000/api/health`
-
-#### 2. Setup & Start React Frontend
-
-```bash
-cd frontend
-
-# Install node dependencies
-npm install
-
-# Start Vite dev server
-npm run dev -- --port 5173
-```
-
-- **Frontend Studio URL**: `http://localhost:5173`
-
-#### 3. (Optional) Run Streamlit Dashboard
-
-```bash
-cd backend
-# Activate your backend virtual environment first, then:
-streamlit run streamlit_app.py
-```
-
-- **Streamlit URL**: `http://localhost:8501`
+- **Manual Frontend Launch**:
+  ```bash
+  cd frontend
+  npm install
+  npm run dev -- --port 5173
+  ```
+  - **Studio URL**: `http://localhost:5173`
 
 ---
 
@@ -222,7 +316,7 @@ streamlit run streamlit_app.py
 
 ### Backend `.env` (`backend/.env`)
 
-Create `backend/.env` using the provided template (`backend/.env.example`):
+Copy `backend/.env.example` to `backend/.env`:
 
 ```env
 APP_ENV=development
@@ -236,7 +330,7 @@ CLAUDE_MODEL=claude-3-5-sonnet-20241022
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-2.5-flash-lite
 
-# App Networking & Storage
+# Networking & Storage
 FRONTEND_ORIGIN=http://localhost:5173
 UPLOAD_DIR=uploads
 EXPORT_DIR=exports
@@ -244,23 +338,25 @@ EXPORT_DIR=exports
 
 ### Frontend `.env` (`frontend/.env`)
 
+Copy `frontend/.env.example` to `frontend/.env`:
+
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api
 ```
 
-### AI Engine Operation Modes
+### AI Mode Auto-Detection
 
-The platform dynamically detects configured keys and selects the operational mode:
+The system dynamically detects configured API keys and selects the operational mode:
 
 | Mode | Condition | Behavior |
 |---|---|---|
-| **Dual-AI Mode** | Both `ANTHROPIC_API_KEY` & `GEMINI_API_KEY` provided | Parallel generation with both models; decider compares scores and declares winner |
+| **Dual-AI Mode** | Both `ANTHROPIC_API_KEY` & `GEMINI_API_KEY` provided | Parallel generation with both models; decider compares scores and presents side-by-side candidates |
 | **Claude Mode** | Only `ANTHROPIC_API_KEY` provided | Live generation with Claude 3.5 Sonnet |
 | **Gemini Mode** | Only `GEMINI_API_KEY` provided | Live generation with Google Gemini 2.5 Flash Lite |
 | **Offline Mock Mode** | Neither key provided (or offline demo) | Uses intelligent Deterministic Mock Engine with realistic, zero-latency copy |
 
-> [!TIP]
-> Google Gemini API keys start with `AIzaSy` from [Google AI Studio](https://aistudio.google.com). Anthropic keys start with `sk-ant-` from the Anthropic Console. If neither key is supplied, CatalogCraft AI works completely offline in Mock Engine mode.
+> [!NOTE]
+> Google Gemini API keys start with `AIzaSy` from [Google AI Studio](https://aistudio.google.com). Anthropic keys start with `sk-ant-` from the Anthropic Console. If neither key is supplied, CatalogCraft AI functions completely offline in Mock Mode.
 
 ---
 
@@ -268,78 +364,74 @@ The platform dynamically detects configured keys and selects the operational mod
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/health` | Service health, active AI mode, and model configuration |
-| `POST` | `/api/generate-description` | Generate copy for a product (supports dual, gemini, claude, mock engines) |
-| `POST` | `/api/regenerate-description` | Regenerate copy for an existing product with updated parameters |
-| `GET` | `/api/products` | Retrieve paginated products with category, brand, status, and search filters |
-| `GET` | `/api/products/{id}` | Retrieve single product details including original attributes and generated copy |
-| `PUT` | `/api/content/{id}` | Update generated copy (editorial human edits, approvals, status toggles) |
-| `POST` | `/api/batch/upload` | Upload CSV or JSON file for batch catalog processing |
-| `POST` | `/api/batch/{id}/process` | Execute batch generation job |
-| `GET` | `/api/batch/{id}` | Get batch progress, row statuses, and summary metrics |
+| `GET` | `/api/health` | Health check, active AI mode, model identifiers, security headers |
+| `POST` | `/api/generate-description` | Generate description for a product (supports dual, gemini, claude, mock) |
+| `POST` | `/api/decide-description` | Dual-AI arbitration endpoint returning candidates, scores, and winner |
+| `POST` | `/api/regenerate-description` | Regenerate copy for an existing catalog product |
+| `GET` | `/api/products` | Retrieve paginated products with category, brand, and search filters |
+| `GET` | `/api/products/{id}` | Retrieve single product details with generated copy versions |
+| `PUT` | `/api/content/{id}` | Update copy, record human edits, toggle approval status |
+| `POST` | `/api/batch/upload` | Upload CSV or JSON file for batch processing (capped at 15 MB) |
+| `POST` | `/api/batch/{id}/process` | Start batch processing job |
+| `GET` | `/api/batch/{id}` | Retrieve batch progress, row statuses, and metrics |
 | `GET` | `/api/analytics/overview` | Aggregated analytics (category distribution, score histograms, tone usage) |
-| `GET` | `/api/brand-settings` | Fetch brand guidelines, forbidden phrases, and legal disclaimers |
-| `PUT` | `/api/brand-settings` | Update brand voice and content rules |
-| `GET` | `/api/export/{format}` | Export entire catalog in `csv` or `json` format |
-
-Interactive documentation is available at `http://localhost:8000/docs` (Swagger) and `http://localhost:8000/redoc`.
+| `GET` | `/api/settings/brand` | Fetch brand guidelines, forbidden phrases, and disclaimers |
+| `PUT` | `/api/settings/brand` | Update brand voice and content rules |
+| `GET` | `/api/export/{format}` | Export catalog in `csv` or `json` with formula sanitization |
 
 ---
 
 ## 🧪 Testing Instructions
 
-Run the backend test suite covering API routers, Pydantic schemas, scoring logic, Dual-AI decider, and mock generators:
+Run the pytest test suite covering API routers, Pydantic schemas, scoring logic, Dual-AI decider, mock generators, and security patches:
 
 ```bash
-cd backend
-python -m pytest app/tests
-```
-
-On Windows with virtualenv:
-```cmd
 cd backend
 .venv\Scripts\python.exe -m pytest app/tests
 ```
 
-The test suite validates:
-- API endpoints & router health (`test_api.py`)
-- Dual AI Decider comparative scoring and arbitration (`test_dual_ai_decider.py`)
-- Mock generator copy structuring and deterministic fallback (`test_mock_generator.py`)
-- 4-dimension Quality Scorer weighting and recommendations (`test_scoring.py`)
+### Verified Test Cases (11/11 Passing):
+- **Health & Mode Diagnostics**: `test_health_endpoint`
+- **Product Listing & Pagination**: `test_products_list_endpoint`
+- **Brand Voice Configuration**: `test_brand_settings_endpoint`
+- **Single Product Copy Generation**: `test_generate_description_mock`
+- **Security Headers Enforcement**: `test_security_headers` (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`)
+- **CSV Formula Injection Sanitization**: `test_csv_export_formula_sanitization` (escapes `=`, `+`, `-`, `@`)
+- **Dual-AI Head-to-Head Decider**: `test_dual_ai_decider_runs_and_selects_winner`
+- **Deterministic Mock Generator**: `test_mock_generator_output`
+- **4-Dimensional Quality Scorer**: `test_scoring_weights_and_breakdown`
 
 ---
 
 ## 📋 Evaluator & Judge Walkthrough Checklist
 
 1. **Verify System Status**:
-   - Open `http://localhost:5173`.
-   - Inspect the top navigation status pill. It displays current engine status (`Dual-AI Active`, `Claude Active`, `Gemini Active`, or `Offline Mock`) with individual chips for Claude and Gemini.
+   - Open Option 2 at `http://localhost:5173` or Option 1 at `http://localhost:8501`.
+   - Inspect the AI Status chip in the header. It clearly displays whether Dual-AI, Gemini, Claude, or Offline Mock is running.
 
-2. **Single Product Generation Demo**:
+2. **Test Dark & Light Mode (Option 2)**:
+   - Click the theme toggle icon (Sun/Moon) in the top-right header of `http://localhost:5173`.
+   - Observe instantaneous transition between dark slate mode and light mode across all cards, inputs, and navigation.
+
+3. **Single Product Generation with Dual-AI Decider**:
    - Navigate to **Generate Description**.
-   - Click **"Load Sample Product"** to auto-populate a realistic retail SKU.
-   - Choose your generation engine (Dual-AI Arbiter, Google Gemini, or Claude).
+   - Click **"Load Sample Product"** to populate realistic attributes.
+   - Select **Dual-AI Arbiter** engine mode.
    - Click **"Generate Description"**.
-   - Review the generated structured copy: Title, Short Description, Bullet Highlights, SEO Meta Tags, and the 4-part Quality Score breakdown.
-   - If using Dual-AI Arbiter, review the **Winner Rationale** and head-to-head score comparison.
+   - Review both the **Gemini** and **Claude** candidates side-by-side, check the winning selection rationale, and click **"Approve This Version"** to finalize the copy.
 
-3. **Editorial Workflow & Version History**:
-   - Click **"Edit Content"** on the generated result card, make an edit, and click **"Save Changes"**.
-   - Notice the "Human Edited" badge and updated version snapshot.
-   - Click **"Approve Description"** to transition status to "Approved".
-
-4. **Batch Generation Demo**:
+4. **Batch Processing Demonstration**:
    - Navigate to **Batch Generator**.
-   - Download the template CSV via **"Sample CSV"**.
-   - Drag and drop `sample_products.csv` into the upload zone.
-   - Click **"Start Batch AI Generation"** and observe live progress tracking with row-level status pills.
-   - Click **"Export CSV"** upon completion.
+   - Download the sample dataset via **"Sample CSV"**.
+   - Drag and drop `sample_products.csv` into the upload dropzone.
+   - Click **"Start Batch AI Generation"** and monitor live progress tracking with status pills.
+   - Export the completed catalog using **"Export CSV"**.
 
-5. **Brand Governance Enforcement**:
+5. **Brand Governance Violation Test**:
    - Navigate to **Brand Voice & Rules**.
    - Add a prohibited term (e.g., `"cheap"` or `"miracle"`).
-   - Return to **Generate Description** and introduce that word into the product features or name.
-   - Trigger generation and verify that the Quality Score flags a brand violation with penalty points and a warning banner.
+   - In **Generate Description**, insert that word into product features.
+   - Trigger generation and verify that the Quality Scorer penalizes the score and outputs a warning.
 
-6. **Executive Analytics & Reporting**:
-   - Navigate to **Analytics** to view live Recharts visualizers for generation volume trends, category breakdown, quality histograms, and tone distribution with contextual business commentary.
+6. **Executive Analytics**:
+   - Navigate to **Analytics** to view Recharts visualizers for volume trends, category distributions, and quality histograms with accompanying business commentary.
