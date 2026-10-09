@@ -15,7 +15,7 @@ The platform provides two complete client interfaces:
 
 ```mermaid
 graph TD
-    User(["Retailer / Merchandiser / Evaluator"]) -->|Option 2: React Studio :5173| Frontend["Frontend: React 19 + TS + Tailwind v4"]
+    User(["Retailer / Merchandiser / Catalog Manager"]) -->|Option 2: React Studio :5173| Frontend["Frontend: React 19 + TS + Tailwind v4"]
     User -->|Option 1: Streamlit Studio :8501| Streamlit["Streamlit Executive Studio"]
     
     Frontend -->|REST API :8000| Backend["Backend: FastAPI + Python 3.11+"]
@@ -401,38 +401,3 @@ cd backend
 - **Dual-AI Head-to-Head Decider**: `test_dual_ai_decider_runs_and_selects_winner`
 - **Deterministic Mock Generator**: `test_mock_generator_output`
 - **4-Dimensional Quality Scorer**: `test_scoring_weights_and_breakdown`
-
----
-
-## 📋 Evaluator & Judge Walkthrough Checklist
-
-1. **Verify System Status**:
-   - Open Option 2 at `http://localhost:5173` or Option 1 at `http://localhost:8501`.
-   - Inspect the AI Status chip in the header. It clearly displays whether Dual-AI, Gemini, Claude, or Offline Mock is running.
-
-2. **Test Dark & Light Mode (Option 2)**:
-   - Click the theme toggle icon (Sun/Moon) in the top-right header of `http://localhost:5173`.
-   - Observe instantaneous transition between dark slate mode and light mode across all cards, inputs, and navigation.
-
-3. **Single Product Generation with Dual-AI Decider**:
-   - Navigate to **Generate Description**.
-   - Click **"Load Sample Product"** to populate realistic attributes.
-   - Select **Dual-AI Arbiter** engine mode.
-   - Click **"Generate Description"**.
-   - Review both the **Gemini** and **Claude** candidates side-by-side, check the winning selection rationale, and click **"Approve This Version"** to finalize the copy.
-
-4. **Batch Processing Demonstration**:
-   - Navigate to **Batch Generator**.
-   - Download the sample dataset via **"Sample CSV"**.
-   - Drag and drop `sample_products.csv` into the upload dropzone.
-   - Click **"Start Batch AI Generation"** and monitor live progress tracking with status pills.
-   - Export the completed catalog using **"Export CSV"**.
-
-5. **Brand Governance Violation Test**:
-   - Navigate to **Brand Voice & Rules**.
-   - Add a prohibited term (e.g., `"cheap"` or `"miracle"`).
-   - In **Generate Description**, insert that word into product features.
-   - Trigger generation and verify that the Quality Scorer penalizes the score and outputs a warning.
-
-6. **Executive Analytics**:
-   - Navigate to **Analytics** to view Recharts visualizers for volume trends, category distributions, and quality histograms with accompanying business commentary.
