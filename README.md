@@ -15,36 +15,37 @@ The platform provides two complete client interfaces:
 
 ```mermaid
 graph TD
-    User([Retailer / Merchandiser / Evaluator]) -->|Option 2: React Studio :5173| Frontend[Frontend: React 19 + TS + Tailwind v4]
-    User -->|Option 1: Streamlit Studio :8501| Streamlit[Streamlit Executive Studio]
+    User(["Retailer / Merchandiser / Evaluator"]) -->|Option 2: React Studio :5173| Frontend["Frontend: React 19 + TS + Tailwind v4"]
+    User -->|Option 1: Streamlit Studio :8501| Streamlit["Streamlit Executive Studio"]
     
-    Frontend -->|REST API :8000| Backend[Backend: FastAPI + Python 3.11+]
-    Streamlit -->|Internal Service Calls| BackendServices[Backend Services & Repositories]
+    Frontend -->|REST API :8000| Backend["Backend: FastAPI + Python 3.11+"]
+    Streamlit -->|Internal Service Calls| BackendServices["Backend Services & Repositories"]
     
-    subgraph Multi-Model AI Layer
-        Backend --> PromptBuilder[PromptBuilder: XML Isolation & Defensive Directives]
+    subgraph AI_Layer ["Multi-Model AI Layer"]
+        Backend --> PromptBuilder["PromptBuilder: XML Isolation & Directives"]
         BackendServices --> PromptBuilder
-        PromptBuilder --> Decider[DescriptionDecider / Arbiter Engine]
-        Decider -->|Dual Mode / Head-to-Head| Both[Dual Candidate Generator]
-        Decider -->|Gemini Key Present| Gemini[Google Gemini 2.5 Flash Lite]
-        Decider -->|Claude Key Present| Claude[Anthropic Claude 3.5 Sonnet]
-        Decider -->|Offline / Keys Absent| MockEngine[Deterministic Mock AI Generator]
+        PromptBuilder --> Decider["DescriptionDecider / Arbiter Engine"]
+        Decider -->|Dual Mode / Head-to-Head| Both["Dual Candidate Generator"]
+        Decider -->|Gemini Key Present| Gemini["Google Gemini 2.5 Flash Lite"]
+        Decider -->|Claude Key Present| Claude["Anthropic Claude 3.5 Sonnet"]
+        Decider -->|Offline / Keys Absent| MockEngine["Deterministic Mock AI Generator"]
         Both --> Gemini
         Both --> Claude
     end
     
-    subgraph Scoring, Governance & Storage Layer
-        Backend --> QualityScorer[Quality Scoring Engine: 4 Dimensions / 100 Pts]
-        Backend --> SecurityMiddleware[Security Middleware & Sanitization]
-        Backend --> BatchProcessor[Pandas Batch Processing Service]
-        Backend --> SQLite[(SQLite Database: catalogcraft.db)]
-        BatchProcessor -->|Reads & Writes| Filesystem[Uploads & Exports Directories]
+    subgraph Storage_Layer ["Scoring, Governance & Storage Layer"]
+        Backend --> QualityScorer["Quality Scoring Engine: 4 Dimensions / 100 Pts"]
+        Backend --> SecurityMiddleware["Security Middleware & Sanitization"]
+        Backend --> BatchProcessor["Pandas Batch Processing Service"]
+        Backend --> SQLite[("SQLite Database: catalogcraft.db")]
+        BatchProcessor -->|Reads & Writes| Filesystem["Uploads & Exports Directories"]
     end
     
     QualityScorer -->|Completeness, SEO, Readability, Brand Alignment| Frontend
     Decider -->|Winner Copy + Decision Rationale + Candidates| Frontend
     Decider -->|Candidates + Manual Approval Workflow| Streamlit
 ```
+
 
 ---
 
