@@ -42,6 +42,7 @@ class GeminiGenerator:
             mock_data = MockGenerator.generate(
                 product, brand_settings, tone, language, word_count_preference, provider="gemini"
             )
+            mock_data.setdefault("warnings", []).append("API Key Notice: GEMINI_API_KEY is empty. Switched to offline Deterministic Mock Generator.")
             return mock_data, "mock"
 
         if api_key.startswith("sk-"):

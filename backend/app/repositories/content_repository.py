@@ -59,9 +59,8 @@ class ContentRepository:
         )
 
         for k, v in update_data.items():
-            if v is not None:
-                if k in ["highlights", "suggested_keywords", "warnings"]:
-                    setattr(content, k, json.dumps(v))
+                if k in ["highlights", "suggested_keywords", "warnings", "candidates_data"]:
+                    setattr(content, k, json.dumps(v) if isinstance(v, (list, dict)) else v)
                 else:
                     setattr(content, k, v)
 

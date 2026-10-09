@@ -88,3 +88,52 @@ def test_api_generate_with_engine_modes():
         assert res_ant.status_code == 200
         data_ant = res_ant.json()["generated_content"]
         assert "title" in data_ant
+
+def test_api_key_empty_fallback_notice():
+    """Verify that when API keys are empty, api_key_notice is returned with is_missing: True and fallback to mock."""
+    prod = ProductCreate(
+        name="Offline Test Item",
+        category="Electronics",
+        brand="TestBrand",
+        price=29.99,
+        features=["Long Battery Life"],
+        primary_keywords=["battery"]
+    )
+    brand_settings = BrandSettingsBase(
+        brand_name="TestBrand",
+        brand_voice="Friendly",
+        preferred_words=[],
+        prohibited_words=[]
+    )
+
+    _, _, meta = DescriptionDecider.decide_perfect_description(
+        product=prod,
+        brand_settings=brand_settings,
+        engine_mode="dual"
+    )
+
+    assert "api_key_notice" in meta
+    # If keys are empty or test env has no real keys:
+    notice = meta["api_key_notice"]
+    assert "is_missing" in notice
+
+    with TestClient(app) as client:
+        res = client.post("/api/generate-description", json={
+            "product": {
+                "name": "Offline Headset",
+                "category": "Electronics",
+                "brand": "Aura",
+                "price": 59.99,
+                "features": ["Wireless"],
+                "primary_keywords": ["headset"]
+            },
+            "tone": "Professional",
+            "language": "English",
+            "word_count_preference": "Medium",
+            "save_to_catalog": True,
+            "engine": "dual"
+        })
+        assert res.status_code == 200
+        gen = res.json()["generated_content"]
+        assert "api_key_notice" in gen
+

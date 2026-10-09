@@ -31,6 +31,7 @@ class AnthropicGenerator:
         if not api_key:
             logger.info("No ANTHROPIC_API_KEY configured. Using Claude-style MockGenerator.")
             mock_data = MockGenerator.generate(product, brand_settings, tone, language, word_count_preference, provider="claude")
+            mock_data.setdefault("warnings", []).append("API Key Notice: ANTHROPIC_API_KEY is empty. Switched to offline Deterministic Mock Generator.")
             return mock_data, "mock"
 
         try:

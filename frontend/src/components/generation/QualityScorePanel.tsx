@@ -3,21 +3,21 @@ import { ScoreBadge } from '../common/ScoreBadge';
 import { ShieldCheck, Search, BookOpen, Sparkles, AlertTriangle } from 'lucide-react';
 
 interface QualityScorePanelProps {
-  qualityScore: number;
-  completenessScore: number;
-  seoScore: number;
-  readabilityScore: number;
-  brandToneScore: number;
+  qualityScore?: number;
+  completenessScore?: number;
+  seoScore?: number;
+  readabilityScore?: number;
+  brandToneScore?: number;
   warnings?: string[];
   recommendations?: string[];
 }
 
 export const QualityScorePanel: React.FC<QualityScorePanelProps> = ({
-  qualityScore,
-  completenessScore,
-  seoScore,
-  readabilityScore,
-  brandToneScore,
+  qualityScore = 0,
+  completenessScore = 0,
+  seoScore = 0,
+  readabilityScore = 0,
+  brandToneScore = 0,
   warnings = [],
   recommendations = []
 }) => {

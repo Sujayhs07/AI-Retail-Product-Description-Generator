@@ -6,7 +6,7 @@ class MockGenerator:
     @staticmethod
     def generate(
         product: ProductCreate,
-        brand_settings: BrandSettingsBase,
+        brand_settings: BrandSettingsBase = None,
         tone: str = "Professional",
         language: str = "English",
         word_count_preference: str = "Medium",
@@ -16,6 +16,9 @@ class MockGenerator:
         Generates realistic, tailored product copy without external AI API.
         Supports distinct stylistic flavors for Anthropic Claude and Google Gemini.
         """
+        if brand_settings is None:
+            brand_settings = BrandSettingsBase()
+
         p_name = product.name
         p_brand = product.brand or brand_settings.brand_name or "Premium Retail"
         p_cat = product.category

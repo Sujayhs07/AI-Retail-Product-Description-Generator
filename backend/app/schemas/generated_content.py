@@ -31,6 +31,12 @@ class GeneratedContentUpdate(BaseModel):
     status: Optional[str] = None
     candidates_data: Optional[List[Dict[str, Any]]] = None
     decision_rationale: Optional[str] = None
+    seo_score: Optional[float] = None
+    readability_score: Optional[float] = None
+    completeness_score: Optional[float] = None
+    brand_tone_score: Optional[float] = None
+    quality_score: Optional[float] = None
+    generation_source: Optional[str] = None
 
 class ContentVersionResponse(BaseModel):
     id: int
@@ -60,8 +66,10 @@ class GeneratedContentResponse(GeneratedContentBase):
     is_human_edited: bool
     candidates_data: Optional[List[Dict[str, Any]]] = []
     decision_rationale: Optional[str] = ""
+    api_key_notice: Optional[Dict[str, Any]] = None
     generated_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+

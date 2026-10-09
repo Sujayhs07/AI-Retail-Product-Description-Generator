@@ -11,22 +11,26 @@ import { ResponsibleAIPage } from './pages/ResponsibleAIPage';
 import { HelpPage } from './pages/HelpPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="generate" element={<GeneratePage />} />
-          <Route path="batch" element={<BatchPage />} />
-          <Route path="catalogue" element={<CataloguePage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
-          <Route path="brand-settings" element={<BrandSettingsPage />} />
-          <Route path="responsible-ai" element={<ResponsibleAIPage />} />
-          <Route path="help" element={<HelpPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="generate" element={<GeneratePage />} />
+            <Route path="batch" element={<BatchPage />} />
+            <Route path="catalogue" element={<CataloguePage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="brand-settings" element={<BrandSettingsPage />} />
+            <Route path="responsible-ai" element={<ResponsibleAIPage />} />
+            <Route path="help" element={<HelpPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 };

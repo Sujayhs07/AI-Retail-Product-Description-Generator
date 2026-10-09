@@ -55,3 +55,25 @@ def test_generate_description_mock():
         data = response.json()
         assert "generated_content" in data
         assert data["generated_content"]["title"] != ""
+
+def test_security_headers():
+    with TestClient(app) as client:
+        response = client.get("/api/health")
+        assert response.headers.get("X-Content-Type-Options") == "nosniff"
+        assert response.headers.get("X-Frame-Options") == "DENY"
+        assert "1; mode=block" in response.headers.get("X-XSS-Protection", "")
+
+def test_csv_export_formula_sanitization():
+    from app.services.export.exporter import ContentExporter
+    malicious_item = {
+        "title": "=cmd|' /C calc'!A0",
+        "description": "@SUM(1+1)",
+        "bullets": "+12345",
+        "category": "-dangerous"
+    }
+    csv_str = ContentExporter.to_csv_string([malicious_item])
+    # Ensure dangerous prefixes are escaped with apostrophe
+    assert "'=cmd|" in csv_str
+    assert "'@SUM" in csv_str
+    assert "'+12345" in csv_str
+    assert "'-dangerous" in csv_str

@@ -71,6 +71,11 @@ export interface GeneratedContent {
   generation_source: string;
   candidates_data?: CandidateOutput[];
   decision_rationale?: string;
+  api_key_notice?: {
+    is_missing: boolean;
+    missing_providers: string[];
+    message?: string;
+  };
   is_human_edited?: boolean;
   generated_at?: string;
   updated_at?: string;

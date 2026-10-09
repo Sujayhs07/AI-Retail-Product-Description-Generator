@@ -19,7 +19,13 @@ async def upload_batch_file(file: UploadFile = File(...), db: Session = Depends(
     if file_ext not in ["csv", "json"]:
         raise HTTPException(status_code=400, detail="Invalid file format. Only CSV and JSON files are supported.")
 
-    content = await file.read()
+    MAX_FILE_SIZE = 15 * 1024 * 1024  # 15 MB
+    content = await file.read(MAX_FILE_SIZE + 1)
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Uploaded file exceeds maximum allowed size of 15 MB."
+        )
     valid_rows, invalid_rows = BatchProcessor.parse_file(content, file_ext)
 
     total_count = len(valid_rows) + len(invalid_rows)

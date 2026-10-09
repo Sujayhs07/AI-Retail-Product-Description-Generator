@@ -123,10 +123,17 @@ def generate_description(req: GenerateDescriptionRequest, db: Session = Depends(
             "word_count_preference": req.word_count_preference,
             "generation_source": source,
             "status": "Draft",
+            "quality_score": scores["quality_score"],
+            "seo_score": scores["seo_score"],
+            "readability_score": scores["readability_score"],
+            "completeness_score": scores["completeness_score"],
+            "brand_tone_score": scores["brand_tone_score"],
             "scores": scores,
             "candidates_data": decision_meta.get("candidates", []),
             "decision_rationale": decision_meta.get("decision_rationale", ""),
-            "decision_summary": decision_meta
+            "decision_summary": decision_meta,
+            "api_key_notice": decision_meta.get("api_key_notice"),
+            "is_human_edited": False
         }
     }
 
@@ -198,7 +205,9 @@ def regenerate_description(req: RegenerateDescriptionRequest, db: Session = Depe
     }
 
     updated_content = ContentRepository.update(db, content, update_dict, is_human=False)
-    return ProductRepository.content_to_dict(updated_content)
+    res_dict = ProductRepository.content_to_dict(updated_content)
+    res_dict["api_key_notice"] = decision_meta.get("api_key_notice")
+    return res_dict
 
 @router.put("/generated-content/{content_id}")
 def update_generated_content(content_id: int, req: GeneratedContentUpdate, db: Session = Depends(get_db)):

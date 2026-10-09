@@ -198,6 +198,25 @@ class ProductRepository:
 
     @staticmethod
     def content_to_dict(content: GeneratedContent) -> Dict[str, Any]:
+        candidates_raw = getattr(content, "candidates_data", None)
+        if isinstance(candidates_raw, str) and candidates_raw.strip():
+            try:
+                candidates_parsed = json.loads(candidates_raw)
+            except Exception:
+                candidates_parsed = []
+        elif isinstance(candidates_raw, list):
+            candidates_parsed = candidates_raw
+        else:
+            candidates_parsed = []
+
+        q_score = float(content.quality_score) if content.quality_score is not None else 0.0
+        s_score = float(content.seo_score) if content.seo_score is not None else 0.0
+        r_score = float(content.readability_score) if content.readability_score is not None else 0.0
+        c_score = float(content.completeness_score) if content.completeness_score is not None else 0.0
+        b_score = float(content.brand_tone_score) if content.brand_tone_score is not None else 0.0
+
+        warnings_list = json.loads(content.warnings) if content.warnings else []
+
         return {
             "id": content.id,
             "product_id": content.product_id,
@@ -208,19 +227,27 @@ class ProductRepository:
             "meta_title": content.meta_title,
             "meta_description": content.meta_description,
             "suggested_keywords": json.loads(content.suggested_keywords) if content.suggested_keywords else [],
-            "warnings": json.loads(content.warnings) if content.warnings else [],
+            "warnings": warnings_list,
             "tone": content.tone,
             "language": content.language,
             "word_count_preference": content.word_count_preference,
-            "seo_score": content.seo_score,
-            "readability_score": content.readability_score,
-            "completeness_score": content.completeness_score,
-            "brand_tone_score": content.brand_tone_score,
-            "quality_score": content.quality_score,
+            "seo_score": s_score,
+            "readability_score": r_score,
+            "completeness_score": c_score,
+            "brand_tone_score": b_score,
+            "quality_score": q_score,
+            "scores": {
+                "quality_score": q_score,
+                "seo_score": s_score,
+                "readability_score": r_score,
+                "completeness_score": c_score,
+                "brand_tone_score": b_score,
+                "recommendations": warnings_list,
+            },
             "status": content.status,
             "generation_source": content.generation_source,
-            "is_human_edited": content.is_human_edited,
-            "candidates_data": json.loads(content.candidates_data) if getattr(content, "candidates_data", None) else [],
+            "is_human_edited": content.is_human_edited or False,
+            "candidates_data": candidates_parsed,
             "decision_rationale": getattr(content, "decision_rationale", None) or "",
             "generated_at": content.generated_at.isoformat() if content.generated_at else None,
             "updated_at": content.updated_at.isoformat() if content.updated_at else None,

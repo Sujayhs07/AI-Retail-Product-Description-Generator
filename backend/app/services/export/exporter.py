@@ -40,8 +40,19 @@ class ContentExporter:
         return data
 
     @staticmethod
-    def to_csv_string(data: List[Dict[str, Any]]) -> str:
-        df = pd.DataFrame(data)
+    def _sanitize_csv_cell(val: Any) -> Any:
+        # Prevent CSV Formula Injection (CWE-1236) in Excel/Calc
+        if isinstance(val, str) and val.startswith(("=", "+", "-", "@", "\t", "\r")):
+            return f"'{val}"
+        return val
+
+    @classmethod
+    def to_csv_string(cls, data: List[Dict[str, Any]]) -> str:
+        sanitized_data = [
+            {k: cls._sanitize_csv_cell(v) for k, v in row.items()}
+            for row in data
+        ]
+        df = pd.DataFrame(sanitized_data)
         return df.to_csv(index=False)
 
     @staticmethod

@@ -31,6 +31,9 @@ class DescriptionDecider:
         """
         engine_mode_clean = (engine_mode or "dual").lower().strip()
 
+        has_gemini_key = bool(settings.GEMINI_API_KEY.strip()) if settings.GEMINI_API_KEY else False
+        has_anthropic_key = bool(settings.ANTHROPIC_API_KEY.strip()) if settings.ANTHROPIC_API_KEY else False
+
         if engine_mode_clean in ["gemini", "google"]:
             content, source = GeminiGenerator.generate(
                 product, brand_settings, tone, language, word_count_preference
@@ -56,7 +59,12 @@ class DescriptionDecider:
                     "winner": "gemini"
                 },
                 "mode": "gemini",
-                "candidates": [candidate]
+                "candidates": [candidate],
+                "api_key_notice": {
+                    "is_missing": not has_gemini_key,
+                    "missing_providers": ["Google Gemini"] if not has_gemini_key else [],
+                    "message": "Google Gemini API key is empty. Switched to offline Deterministic Mock Generator." if not has_gemini_key else None
+                }
             }
             return content, source, decision_meta
 
@@ -85,12 +93,23 @@ class DescriptionDecider:
                     "winner": "anthropic"
                 },
                 "mode": "anthropic",
-                "candidates": [candidate]
+                "candidates": [candidate],
+                "api_key_notice": {
+                    "is_missing": not has_anthropic_key,
+                    "missing_providers": ["Anthropic Claude"] if not has_anthropic_key else [],
+                    "message": "Anthropic Claude API key is empty. Switched to offline Deterministic Mock Generator." if not has_anthropic_key else None
+                }
             }
             return content, source, decision_meta
 
         # DUAL MODE: Run Anthropic Claude and Google Gemini (Gemini 3.5 Lite) and decide the winner
         logger.info("Executing Dual-AI Decision Engine: Generating candidates with Anthropic Claude and Google Gemini...")
+
+        missing_keys = []
+        if not has_anthropic_key:
+            missing_keys.append("Anthropic Claude")
+        if not has_gemini_key:
+            missing_keys.append("Google Gemini")
 
         content_claude, source_claude = AnthropicGenerator.generate(
             product, brand_settings, tone, language, word_count_preference
@@ -160,7 +179,12 @@ class DescriptionDecider:
             "decision_rationale": decision_rationale,
             "score_comparison": score_comparison,
             "mode": "dual",
-            "candidates": [candidate_claude_entry, candidate_gemini_entry]
+            "candidates": [candidate_claude_entry, candidate_gemini_entry],
+            "api_key_notice": {
+                "is_missing": bool(missing_keys),
+                "missing_providers": missing_keys,
+                "message": f"API key is empty for {', '.join(missing_keys)}. Switched to offline Deterministic Mock Generator." if missing_keys else None
+            }
         }
 
         effective_source = f"{winner_source} (decided)" if winner_source in ["claude", "gemini"] else "dual_decided_mock"

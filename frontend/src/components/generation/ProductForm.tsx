@@ -890,6 +890,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onGenerate, isLoading 
           </>
         )}
       </button>
+
+      {/* Offline Mock Guarantee Note */}
+      <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 text-center">
+        <span>⚡ Zero-Downtime Architecture: If live API keys are empty, CatalogCraft automatically falls back to the deterministic offline Mock Engine.</span>
+      </div>
     </form>
   );
 };
